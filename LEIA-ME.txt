@@ -1,0 +1,48 @@
+NAYARA GESTÃO — OCR V2
+
+O QUE MUDA
+
+OCR:
+- múltiplas passagens por imagem;
+- versão normalizada;
+- versão alto contraste;
+- recorte adicional para CNH-e/SERPRO;
+- PDF de identidade/endereço sempre usa OCR visual;
+- reduz exposição de PII nos logs.
+
+PARSER:
+- filiação procura primeiro o bloco FILIAÇÃO;
+- tolera deformações comuns do OCR no rótulo FILIAÇÃO;
+- só preenche nome da mãe quando encontra dois nomes plausíveis;
+- remove duplicatas geradas pelo OCR multi-pass;
+- rua pode ser detectada mesmo com pequenos ruídos antes de RUA/AV;
+- melhora limpeza de colunas laterais de contas;
+- bairro tolera pequenas deformações;
+- mantém a regra: em dúvida, campo vazio.
+
+COMO APLICAR
+
+Substitua:
+
+backend/src/documents/ocr/ocr.service.ts
+backend/src/documents/extractors/data-extractor.service.ts
+
+Não há pacote npm novo.
+
+TESTE
+
+1. Pare/reinicie o backend se necessário.
+2. Rode:
+   npm run build
+3. Se passar:
+   npm run start:dev
+4. Faça NOVO upload dos 3 documentos.
+   Não reutilize lote antigo: a extração antiga já está salva no JSON daquele lote.
+
+IMPORTANTE
+
+A OCR V2 é propositalmente mais pesada que a V1 porque roda mais de uma leitura visual.
+Depois dos testes de qualidade podemos otimizar para só disparar passagens extras quando a
+primeira leitura tiver baixa qualidade.
+
+A extração continua conservadora: não inventa campos quando não há confiança.

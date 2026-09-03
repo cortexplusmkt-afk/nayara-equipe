@@ -1,0 +1,153 @@
+NAYARA GESTÃO — PERMISSÕES + USUÁRIOS V1
+
+PRÉ-REQUISITO
+Este pacote assume que o Auth V1 já está instalado e funcionando:
+- login real
+- cookie HttpOnly
+- AuthGuard global
+- UsersModule / AuthModule
+- usuários ADMIN / OPERATOR / VIEWER
+
+O QUE MUDA
+
+BACKEND
+1. DocumentsController
+   ADMIN / OPERATOR somente.
+   VIEWER não acessa upload, OCR, revisão, finalização ou metadados de documentos.
+
+2. RegistrationsController
+   Todos autenticados:
+   - GET /registrations
+   - dashboard
+   - mapa
+   - território
+   - detalhe
+
+   ADMIN / OPERATOR:
+   - POST /registrations/geocode-pending
+   - GET /registrations/:cadastroId/pdf
+   - PUT /registrations/:cadastroId
+
+3. RolesController
+   - GET: todos autenticados
+   - POST: ADMIN
+
+4. ElectoralDataController
+   - status e polling-place: todos autenticados
+   - import-local: ADMIN
+
+5. UsersController
+   Já permanece ADMIN-only, conforme Auth V1.
+
+6. AuthGuard
+   Agora consulta o usuário atual a cada requisição.
+   Se o administrador desativar um usuário, o próximo request desse usuário recebe 401.
+   Alterações de perfil também passam a valer no backend imediatamente.
+
+FRONTEND
+- RequireRole.tsx
+- rotas de criação/revisão/finalização: ADMIN / OPERATOR
+- Documentos: ADMIN / OPERATOR
+- Configurações: ADMIN
+- Sidebar oculta Documentos para VIEWER e Configurações para não-admin
+- Configurações ganha gestão de usuários
+- criação de usuário
+- alteração de perfil
+- ativação/desativação
+- redefinição de senha em campo password
+- status da autenticação atualizado
+
+MATRIZ V1
+
+                         ADMIN   OPERATOR   VIEWER
+Dashboard                  SIM      SIM       SIM
+Ver cadastros              SIM      SIM       SIM
+Criar cadastro             SIM      SIM       NÃO
+Editar cadastro            SIM      SIM       NÃO
+Mapa                       SIM      SIM       SIM
+Território Eleitoral       SIM      SIM       SIM
+Documentos/PDF             SIM      SIM       NÃO
+Criar cargo                SIM      NÃO       NÃO
+Reimportar TSE             SIM      NÃO       NÃO
+Geocodificar pendentes     SIM      SIM       NÃO
+Gerenciar usuários         SIM      NÃO       NÃO
+Configurações              SIM      NÃO       NÃO
+
+INSTALAÇÃO
+
+BACKEND — substituir:
+backend/src/auth/auth.guard.ts
+backend/src/users/users.service.ts
+backend/src/registrations/registrations.controller.ts
+backend/src/documents/documents.controller.ts
+backend/src/roles/roles.controller.ts
+backend/src/electoral-data/electoral-data.controller.ts
+
+FRONTEND — criar/substituir:
+frontend/src/auth/RequireRole.tsx
+frontend/src/services/users.ts
+frontend/src/App.tsx
+frontend/src/components/Sidebar.tsx
+frontend/src/pages/Configuracoes.tsx
+
+CSS:
+Adicionar o conteúdo de:
+frontend/permissoes-usuarios.css
+
+ao FINAL do global.css já existente.
+
+TESTE
+
+1. Backend:
+npm run build
+npm run start:dev
+
+2. Frontend:
+npm run build
+npm run dev
+
+3. Entrar como ADMIN.
+Abrir Configurações.
+Deve existir "Usuários do sistema".
+
+4. Criar:
+- um OPERADOR
+- um VISUALIZAÇÃO
+
+5. Testar OPERADOR:
+- vê Documentos
+- não vê Configurações
+- consegue cadastrar/editar
+
+6. Testar VISUALIZAÇÃO:
+- não vê Documentos
+- não vê Configurações
+- /documentos manual redireciona para /
+- /configuracoes manual redireciona para /
+- criação/revisão/finalização manual redireciona para /
+- backend bloqueia mutações/PDF com 403
+
+OBSERVAÇÃO DE UX
+A API já é a fonte real de segurança.
+Alguns botões internos da página Cadastros/DetalheCadastro ainda podem aparecer visualmente para VIEWER,
+dependendo do componente atual. Mesmo assim a ação é bloqueada pelo backend.
+Depois do teste dos três perfis, vale fazer uma última limpeza visual nesses componentes.
+
+INSTALADOR FINAL
+Ainda NÃO considerar este pacote como instalador-ready.
+
+Para o produto final:
+- PostgreSQL antes de uso multiusuário definitivo
+- auditoria createdBy/updatedBy
+- dados fora da pasta Git/aplicação
+- C:\ProgramData\CortexPlus\Nayara
+- frontend buildado servido pelo backend
+- aplicação ouvindo apenas 127.0.0.1
+- Cloudflare Tunnel para o domínio do cliente
+- serviço Windows
+- backup/retention
+- storage de documentos centralizado/configurável
+- segredos gerados pelo instalador, nunca versionados
+
+PORTA 3000 CONTINUA INTACTA.
+Backend Nayara = 3001 no desenvolvimento.

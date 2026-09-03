@@ -1,0 +1,111 @@
+NAYARA GESTÃO — AUTH V1
+
+OBJETIVO
+- Login real.
+- JWT em cookie HttpOnly (não usa localStorage).
+- Todas as rotas da API protegidas por padrão.
+- Usuários ADMIN / OPERATOR / VIEWER.
+- CRUD inicial de usuários disponível apenas para ADMIN.
+- Primeiro administrador criado somente quando ainda não existe users.json.
+
+1) DEPENDÊNCIAS DO BACKEND
+
+Na pasta backend:
+
+npm install @nestjs/config @nestjs/jwt bcryptjs cookie-parser
+npm install -D @types/cookie-parser
+
+2) CRIAR .env
+
+Copie backend/.env.example para backend/.env.
+
+Gere JWT_SECRET:
+
+node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+
+Cole o resultado em JWT_SECRET.
+
+Defina ADMIN_EMAIL e ADMIN_PASSWORD.
+A senha deve ter pelo menos 10 caracteres.
+
+IMPORTANTE:
+ADMIN_PASSWORD é apenas bootstrap de desenvolvimento.
+Depois que storage/users.json existir, ela não altera a senha.
+No instalador final a senha inicial será coletada/gerada pelo setup e não ficará em texto puro no .env.
+
+3) COPIAR ARQUIVOS
+
+Copie a estrutura backend/src/auth e backend/src/users.
+Substitua backend/src/app.module.ts e backend/src/main.ts.
+
+No frontend:
+- crie src/auth
+- crie src/services/auth.ts
+- substitua src/services/api.ts
+- substitua src/pages/Login.tsx
+- substitua src/App.tsx
+- substitua src/components/Sidebar.tsx
+- anexe frontend/auth.css ao final de src/styles/global.css (ou o arquivo global equivalente).
+
+4) TESTE BACKEND
+
+npm run build
+npm run start:dev
+
+Ao iniciar pela primeira vez deve aparecer:
+"Administrador inicial criado: ..."
+
+O arquivo:
+backend/storage/users.json
+deve existir e conter passwordHash, nunca senha em texto puro.
+
+5) TESTE LOGIN
+
+Frontend:
+npm run build
+npm run dev
+
+Abra:
+http://localhost:5173/login
+
+Use ADMIN_EMAIL / ADMIN_PASSWORD.
+
+6) TESTE DE PROTEÇÃO
+
+Sem estar logado:
+
+Invoke-WebRequest `
+  -Uri "http://localhost:3001/api/registrations"
+
+Deve retornar 401.
+
+7) PERFIS
+
+ADMIN
+- infraestrutura pronta para restrições administrativas;
+- /api/users já exige ADMIN.
+
+OPERATOR
+- autenticado; permissões finas nos controllers serão aplicadas no próximo passo.
+
+VIEWER
+- autenticado; read-only será aplicado nos controllers no próximo passo.
+
+NÃO considerar permissões V1 totalmente fechadas até anotarmos os controllers de documentos,
+cadastros, cargos e base eleitoral.
+
+8) ARQUITETURA DO INSTALADOR FINAL
+
+Meta:
+- frontend buildado e servido pela própria aplicação;
+- backend + frontend em um único serviço local;
+- app ouvindo apenas 127.0.0.1;
+- cloudflared apontando para esse serviço;
+- domínio do cliente via Cloudflare Tunnel;
+- dados fora da pasta do Git/app, em C:\ProgramData\CortexPlus\Nayara;
+- nenhum segredo ou dado do cliente versionado no Git;
+- serviço iniciando com o Windows;
+- PostgreSQL antes de uso multiusuário em produção.
+
+PORTA 3000 NÃO É USADA.
+Backend Nayara continua na 3001 durante desenvolvimento.

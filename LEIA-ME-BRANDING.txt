@@ -1,0 +1,28 @@
+FRONTEND — TÍTULO E FAVICON
+
+1. Copie favicon.svg para:
+
+frontend/public/favicon.svg
+
+2. Abra:
+
+frontend/index.html
+
+3. Dentro de <head>, deixe estas linhas:
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<meta name="theme-color" content="#00462e" />
+<title>Nayara Barcelos | Gestão de Equipe</title>
+
+Se existir:
+<title>frontend</title>
+
+remova/substitua por:
+<title>Nayara Barcelos | Gestão de Equipe</title>
+
+Depois:
+npm run build
+
+Observação:
+O navegador pode manter o favicon antigo em cache.
+Se necessário, use Ctrl+F5 ou abra uma janela anônima.

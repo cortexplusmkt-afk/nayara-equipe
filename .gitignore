@@ -1,0 +1,29 @@
+# Dependencies
+**/node_modules/
+
+# Builds
+**/dist/
+**/.vite/
+*.tsbuildinfo
+
+# Environment / secrets
+**/.env
+**/.env.local
+**/.env.production
+!**/.env.example
+
+# Runtime data — JAMAIS versionar
+backend/storage/
+backend/logs/
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+**/.git.metadata-backup/
+
+# Temp
+*.tmp
+*.temp
